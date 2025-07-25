@@ -1,6 +1,15 @@
-// Global score variables
+// Global variables
 let humanScore = 0;
 let computerScore = 0;
+let round = 1;
+const totalRounds = 5; // Play best of 5
+
+// DOM elements
+const buttons = document.querySelectorAll('button:not(#reset)');
+const resultDiv = document.getElementById('result');
+const scoreDiv = document.getElementById('score');
+const gameOverDiv = document.getElementById('game-over');
+const resetButton = document.getElementById('reset');
 
 // Function to get computer's choice
 function getComputerChoice() {
@@ -9,60 +18,73 @@ function getComputerChoice() {
     return choices[randomIndex];
 }
 
-// Function to get human's choice
-function getHumanChoice() {
-    let choice = prompt("Choose rock, paper, or scissors:");
-    while (!['rock', 'paper', 'scissors'].includes(choice?.toLowerCase())) {
-        choice = prompt("Invalid choice. Please choose rock, paper, or scissors:");
-    }
-    return choice.toLowerCase();
-}
-
 // Function to play a single round
-function playRound(humanChoice, computerChoice) {
-    // Make human choice case-insensitive
-    humanChoice = humanChoice.toLowerCase();
+function playRound(humanChoice) {
+    if (round > totalRounds) return;
+    
+    const computerChoice = getComputerChoice();
+    let result = '';
     
     if (humanChoice === computerChoice) {
-        return "It's a tie!";
-    }
-    
-    if ((humanChoice === 'rock' && computerChoice === 'scissors') ||
+        result = `Round ${round}: It's a tie! Both chose ${humanChoice}`;
+    } else if (
+        (humanChoice === 'rock' && computerChoice === 'scissors') ||
         (humanChoice === 'paper' && computerChoice === 'rock') ||
-        (humanChoice === 'scissors' && computerChoice === 'paper')) {
+        (humanChoice === 'scissors' && computerChoice === 'paper')
+    ) {
         humanScore++;
-        return `You win! ${humanChoice} beats ${computerChoice}`;
+        result = `Round ${round}: You win! ${humanChoice} beats ${computerChoice}`;
     } else {
         computerScore++;
-        return `You lose! ${computerChoice} beats ${humanChoice}`;
+        result = `Round ${round}: You lose! ${computerChoice} beats ${humanChoice}`;
+    }
+    
+    // Update the UI
+    resultDiv.textContent = result;
+    scoreDiv.textContent = `You: ${humanScore} - Computer: ${computerScore}`;
+    
+    // Check if game is over
+    if (round >= totalRounds) {
+        endGame();
+    } else {
+        round++;
     }
 }
 
-// Function to play the full game
-function playGame() {
-    // Reset scores
+// Function to end the game
+function endGame() {
+    buttons.forEach(button => button.disabled = true);
+    resetButton.style.display = 'inline-block';
+    
+    if (humanScore > computerScore) {
+        gameOverDiv.textContent = '🎉 You win the game! 🎉';
+    } else if (computerScore > humanScore) {
+        gameOverDiv.textContent = '😢 Computer wins the game! 😢';
+    } else {
+        gameOverDiv.textContent = '🤝 The game is a tie! 🤝';
+    }
+}
+
+// Function to reset the game
+function resetGame() {
     humanScore = 0;
     computerScore = 0;
-    
-    // Play 3 rounds
-    for (let i = 0; i < 3; i++) {
-        const humanSelection = getHumanChoice();
-        const computerSelection = getComputerChoice();
-        console.log(playRound(humanSelection, computerSelection));
-        console.log(`Score - You: ${humanScore}, Computer: ${computerScore}`);
-    }
-    
-    // Determine the final winner
-    if (humanScore > computerScore) {
-        return "You win the game!";
-    } else if (computerScore > humanScore) {
-        return "You lose the game!";
-    } else {
-        return "The game is a tie!";
-    }
+    round = 1;
+    resultDiv.textContent = 'Choose your move!';
+    scoreDiv.textContent = 'You: 0 - Computer: 0';
+    gameOverDiv.textContent = '';
+    resetButton.style.display = 'none';
+    buttons.forEach(button => button.disabled = false);
 }
 
-// Start the game
-console.log("Welcome to Rock Paper Scissors! Best of 3 wins!");
-const finalResult = playGame();
-console.log(finalResult);
+// Event Listeners
+buttons.forEach(button => {
+    button.addEventListener('click', () => {
+        playRound(button.id);
+    });
+});
+
+resetButton.addEventListener('click', resetGame);
+
+// Initialize the game
+resetGame();

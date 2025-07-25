@@ -2,7 +2,7 @@
 let humanScore = 0;
 let computerScore = 0;
 let round = 1;
-const totalRounds = 5; // Play best of 5
+const totalRounds = 3; // Play best of 3
 
 // DOM elements
 const buttons = document.querySelectorAll('button:not(#reset)');
